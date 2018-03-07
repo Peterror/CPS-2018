@@ -1,10 +1,11 @@
 import numpy as np
+import copy
 
 
 # Klasy bazowe
 
 class SygnalCiagly(object):
-    def __init__(self, amplituda, czas_poczatkowy, czas_trwania, okres, f_probkowania):
+    def __init__(self, amplituda, czas_poczatkowy, czas_trwania, okres, f_probkowania=0.01):
         self.A = amplituda
         if czas_poczatkowy > 0:
             self.t1 = czas_poczatkowy
@@ -17,6 +18,70 @@ class SygnalCiagly(object):
         self.T = okres
         self.y = None  # inicjalizowane w klasach potomnych
         self.x = np.arange(0, czas_trwania + f_probkowania, f_probkowania)
+
+    def __add__(self, other):
+        if self.y.size == other.y.size:
+            sygnal_wynikowy = copy.deepcopy(self)
+            sygnal_wynikowy.y = self.y + other.y
+        elif self.y.size < other.y.size:
+            sygnal_wynikowy = copy.deepcopy(other)
+            zera = np.empty(other.y.size - self.y.size)
+            zera.fill(0)
+            sygnal_wynikowy.y = np.append(self.y, zera) + other.y
+        else:
+            sygnal_wynikowy = copy.deepcopy(self)
+            zera = np.empty(self.y.size - other.y.size)
+            zera.fill(0)
+            sygnal_wynikowy.y = self.y + np.append(other.y, zera)
+        return sygnal_wynikowy
+
+    def __sub__(self, other):
+        if self.y.size == other.y.size:
+            sygnal_wynikowy = copy.deepcopy(self)
+            sygnal_wynikowy.y = self.y - other.y
+        elif self.y.size < other.y.size:
+            sygnal_wynikowy = copy.deepcopy(other)
+            zera = np.empty(other.y.size - self.y.size)
+            zera.fill(0)
+            sygnal_wynikowy.y = np.append(self.y, zera) - other.y
+        else:
+            sygnal_wynikowy = copy.deepcopy(self)
+            zera = np.empty(self.y.size - other.y.size)
+            zera.fill(0)
+            sygnal_wynikowy.y = self.y - np.append(other.y, zera)
+        return sygnal_wynikowy
+
+    def __mul__(self, other):
+        if self.y.size == other.y.size:
+            sygnal_wynikowy = copy.deepcopy(self)
+            sygnal_wynikowy.y = self.y * other.y
+        elif self.y.size < other.y.size:
+            sygnal_wynikowy = copy.deepcopy(other)
+            zera = np.empty(other.y.size - self.y.size)
+            zera.fill(0)
+            sygnal_wynikowy.y = np.append(self.y, zera) * other.y
+        else:
+            sygnal_wynikowy = copy.deepcopy(self)
+            zera = np.empty(self.y.size - other.y.size)
+            zera.fill(0)
+            sygnal_wynikowy.y = self.y * np.append(other.y, zera)
+        return sygnal_wynikowy
+
+    def __truediv__(self, other):
+        if self.y.size == other.y.size:
+            sygnal_wynikowy = copy.deepcopy(self)
+            sygnal_wynikowy.y = self.y / other.y
+        elif self.y.size < other.y.size:
+            sygnal_wynikowy = copy.deepcopy(other)
+            zera = np.empty(other.y.size - self.y.size)
+            zera.fill(0)
+            sygnal_wynikowy.y = np.append(self.y, zera) / other.y
+        else:
+            sygnal_wynikowy = copy.deepcopy(self)
+            zera = np.empty(self.y.size - other.y.size)
+            zera.fill(0)
+            sygnal_wynikowy.y = self.y / np.append(other.y, zera)
+        return sygnal_wynikowy
 
     def _generuj_probki(self):
         """
@@ -47,6 +112,31 @@ class SygnalCiagly(object):
 
 
 # Klasy dziedziczace
+
+class SygnalCiaglyNieokreslony(SygnalCiagly):
+    def __init__(self, x, y):
+        super(SygnalCiaglyNieokreslony, self).\
+            __init__(None, 0, x[-1], None, x[1] - x[0])
+        self.x = copy.copy(x)
+        self.y = copy.copy(y)
+
+    def _generuj_probki(self):
+        return None
+
+    def srednia(self):
+        return None
+
+    def srednia_bezwzgledna(self):
+        return None
+
+    def moc_srednia(self):
+        return None
+
+    def wariancja_wokol_sredniej(self):
+        return None
+
+    def wartosc_skuteczna(self):
+        return None
 
 class SzumORozkladzieJednostajnym(SygnalCiagly):
     def __init__(self, amplituda, czas_poczatkowy, czas_trwania, okres, f_probkowania):
@@ -82,7 +172,7 @@ class Sinusoida(SygnalCiagly):
         poczatkowe_zera = np.empty(int(self.t1/self.f_p))
         poczatkowe_zera.fill(0)
         t = np.arange(0, self._czas_trwania_czystego_sygnalu + self.f_p, self.f_p)
-        return np.append(poczatkowe_zera, self.A * np.sin(t))
+        return np.append(poczatkowe_zera, self.A * np.sin(2*np.pi/self.T * (t-self.t1)))
 
 
 class SinusoidaWyprostowanaJednopolowkowo(SygnalCiagly):
@@ -95,7 +185,7 @@ class SinusoidaWyprostowanaJednopolowkowo(SygnalCiagly):
         poczatkowe_zera = np.empty(int(self.t1/self.f_p))
         poczatkowe_zera.fill(0)
         t = np.arange(0, self._czas_trwania_czystego_sygnalu + self.f_p, self.f_p)
-        x_sin = np.sin(t)
+        x_sin = np.sin(2*np.pi/self.T * (t-self.t1))
         return np.append(poczatkowe_zera, 0.5 * self.A * (x_sin + np.abs(x_sin)))
 
 
@@ -109,7 +199,7 @@ class SinusoidaWyprostowanaDwupolowkowo(SygnalCiagly):
         poczatkowe_zera = np.empty(int(self.t1/self.f_p))
         poczatkowe_zera.fill(0)
         t = np.arange(0, self._czas_trwania_czystego_sygnalu + self.f_p, self.f_p)
-        return np.append(poczatkowe_zera, np.abs(self.A * np.sin(t)))
+        return np.append(poczatkowe_zera, np.abs(self.A * np.sin(2*np.pi/self.T * (t-self.t1))))
 
 
 class Prostokat(SygnalCiagly):
