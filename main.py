@@ -1,6 +1,6 @@
 from Generator.SygnalCiagly import Trojkat, SzumORozkladzieJednostajnym, SzumGaussowski, SkokJednostkowy, \
     SinusoidaWyprostowanaJednopolowkowo, SinusoidaWyprostowanaDwupolowkowo, ProstokatSymetryczny, Sinusoida, Prostokat
-
+from Wykresy.GeneratorWykresow import generuj_wykres
 
 def wypisz_dostepne_sygnaly():
     print("(S0) sygnał z pliku;")
@@ -51,7 +51,11 @@ def wygeneruj_sygnal():
     argumenty = []
     print("Podaj parametry sygnału:")
     for nazwa_parametru in opcje[wybrany_sygnal][1]:
-        argumenty += [int(input(nazwa_parametru))]
+        wartosc = input(nazwa_parametru)
+        try:
+            argumenty += [int(wartosc)]
+        except ValueError:
+            argumenty += [float(wartosc)]
     obiekt_sygnalu = opcje[wybrany_sygnal][0](*argumenty)
 
     return obiekt_sygnalu
@@ -59,9 +63,8 @@ def wygeneruj_sygnal():
 
 def wykonaj_dzialanie_na_sygnale(sygnal):
     def _dodaj(uklad_xy_a):
-        uklad_xy_b = wygeneruj_sygnal().generuj_uklad_xy()
-        uklad_xy_wynikowy = uklad_xy_a[1] + uklad_xy_b[1]
-        return uklad_xy_wynikowy
+        uklad_xy_b = wygeneruj_sygnal()
+        return uklad_xy_b+uklad_xy_a
 
     def _odejmij(uklad_xy_a):
         uklad_xy_b = wygeneruj_sygnal().generuj_uklad_xy()
@@ -96,25 +99,31 @@ def wykonaj_dzialanie_na_sygnale(sygnal):
     return sygnal_wynikowy
 
 
-def wykonaj_operacje_programu():
+def wykonaj_operacje_programu(sygnal):
     def local_zapisz_sygnal_do_pliku():
         return True
 
     def local_wyswietl_wykres():
+        generuj_wykres(sygnal)
         return True
 
     def local_zakoncz():
         return False
 
-    print("Co wykonać teraz?")
+    def local_kontynuuj():
+        return False
+
+    print("Co wykonać przed działaniami na sygnale?")
     print("(W1) Zapisanie wygenerowanego sygnalu do pliku;")
     print("(W2) Wyświetl wykres;")
-    print("(W3) ZAKOŃCZ;")
+    print("(W3) KONTYNUUJ;")
+    print("(W4) ZAKOŃCZ;")
 
     opcje = {
         '1': None,
-        '2': None,
-        '3': local_zakoncz
+        '2': local_wyswietl_wykres,
+        '3': local_kontynuuj,
+        '4': local_zakoncz
     }
     wybrany_wariant = input("Wykonaj wariant W")
     if opcje[wybrany_wariant] is None:
@@ -122,14 +131,13 @@ def wykonaj_operacje_programu():
     return opcje[wybrany_wariant]()
 
 
-
 def main():
-
+    sygnal = wygeneruj_sygnal()
     while True:
-        sygnal = wygeneruj_sygnal()
-        sygnal = wykonaj_dzialanie_na_sygnale(sygnal)
-        if wykonaj_operacje_programu() is False:
+        if wykonaj_operacje_programu(sygnal) is False:
             break
+        sygnal = wykonaj_dzialanie_na_sygnale(sygnal)
+
 
 
 

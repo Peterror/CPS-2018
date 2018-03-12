@@ -2,6 +2,11 @@ from Generator import SygnalDyskretny, SygnalCiagly
 import matplotlib.pyplot as plt
 
 
+def generuj_wykres(sygnal):
+    plt.plot(*sygnal.generuj_uklad_xy())
+    plt.show()
+
+
 def test():
     config = (10, 0, 10, 1.5, 0.01)
     plt.plot(*SygnalCiagly.Sinusoida(*config).generuj_uklad_xy())

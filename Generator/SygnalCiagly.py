@@ -138,6 +138,7 @@ class SygnalCiaglyNieokreslony(SygnalCiagly):
     def wartosc_skuteczna(self):
         return None
 
+
 class SzumORozkladzieJednostajnym(SygnalCiagly):
     def __init__(self, amplituda, czas_poczatkowy, czas_trwania, okres, f_probkowania):
         super(SzumORozkladzieJednostajnym, self).\
