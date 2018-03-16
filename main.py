@@ -3,6 +3,8 @@ from Generator.SygnalCiagly import Trojkat, SzumORozkladzieJednostajnym, SzumGau
     SygnalCiaglyNieokreslony
 from Generator.SygnalDyskretny import SygnalDyskretny, SzumImpulsowy, ImpulsJednostkowy
 from Wykresy.GeneratorWykresow import generuj_wykres, generuj_histogram
+from OperacjeNaPliku import Wczytaj, Zapisz
+
 
 def wypisz_dostepne_sygnaly():
     print("(S0) sygnał z pliku;")
@@ -27,14 +29,13 @@ def wypisz_dostepne_dzialania():
 
 
 def wygeneruj_sygnal():
-    obiekt_sygnalu = None
     print("Który sygnał chcesz generować?")
     wypisz_dostepne_sygnaly()
     wybrany_sygnal = input("Generuj sygnał o kodzie S")
     parametry = ['amplituda ', 'czas_poczatkowy ', 'czas_trwania ', 'okres ', 'f_probkowania ']
     dyskretne_parametry = ['amplituda ', 'numer_pierwszej_probki ', 'czas_trwania ', 'f_probkowania ']
     opcje = {
-        '0':  None,
+        '0':  [Wczytaj.wczytaj, ['Nazwa pliku ']],
         '1':  [SzumORozkladzieJednostajnym, parametry],
         '2':  [SzumGaussowski, parametry],
         '3':  [Sinusoida, parametry],
@@ -57,7 +58,10 @@ def wygeneruj_sygnal():
         try:
             argumenty += [int(wartosc)]
         except ValueError:
-            argumenty += [float(wartosc)]
+            try:
+                argumenty += [float(wartosc)]
+            except ValueError:
+                argumenty += [wartosc]
     obiekt_sygnalu = opcje[wybrany_sygnal][0](*argumenty)
 
     return obiekt_sygnalu
@@ -80,8 +84,6 @@ def wykonaj_dzialanie_na_sygnale(sygnal):
         uklad_xy_b = wygeneruj_sygnal()
         return uklad_xy_a/uklad_xy_b
 
-    sygnal_wynikowy = None
-
     print("Jakie działania wykonać na tym sygnale?")
     wypisz_dostepne_dzialania()
     wybrane_dzialanie = input("Wykonaj działanie D")
@@ -100,10 +102,11 @@ def wykonaj_dzialanie_na_sygnale(sygnal):
 
 def wykonaj_operacje_programu(sygnal):
     def local_zapisz_sygnal_do_pliku():
+        Zapisz.zapisz(sygnal)
         return True
 
     def local_wyswietl_wykres():
-        if isinstance(sygnal,SygnalDyskretny):
+        if isinstance(sygnal, SygnalDyskretny):
             generuj_histogram(sygnal)
         else:
             generuj_wykres(sygnal)
@@ -118,7 +121,7 @@ def wykonaj_operacje_programu(sygnal):
     print("(W3) KONTYNUUJ;")
 
     opcje = {
-        '1': None,
+        '1': local_zapisz_sygnal_do_pliku,
         '2': local_wyswietl_wykres,
         '3': local_kontynuuj,
     }
