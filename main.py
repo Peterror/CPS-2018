@@ -1,6 +1,8 @@
 from Generator.SygnalCiagly import Trojkat, SzumORozkladzieJednostajnym, SzumGaussowski, SkokJednostkowy, \
-    SinusoidaWyprostowanaJednopolowkowo, SinusoidaWyprostowanaDwupolowkowo, ProstokatSymetryczny, Sinusoida, Prostokat
-from Wykresy.GeneratorWykresow import generuj_wykres
+    SinusoidaWyprostowanaJednopolowkowo, SinusoidaWyprostowanaDwupolowkowo, ProstokatSymetryczny, Sinusoida, Prostokat,\
+    SygnalCiaglyNieokreslony
+from Generator.SygnalDyskretny import SygnalDyskretny, SzumImpulsowy, ImpulsJednostkowy
+from Wykresy.GeneratorWykresow import generuj_wykres, generuj_histogram
 
 def wypisz_dostepne_sygnaly():
     print("(S0) sygnał z pliku;")
@@ -30,7 +32,7 @@ def wygeneruj_sygnal():
     wypisz_dostepne_sygnaly()
     wybrany_sygnal = input("Generuj sygnał o kodzie S")
     parametry = ['amplituda ', 'czas_poczatkowy ', 'czas_trwania ', 'okres ', 'f_probkowania ']
-
+    dyskretne_parametry = ['amplituda ', 'numer_pierwszej_probki ', 'czas_trwania ', 'f_probkowania ']
     opcje = {
         '0':  None,
         '1':  [SzumORozkladzieJednostajnym, parametry],
@@ -42,8 +44,8 @@ def wygeneruj_sygnal():
         '7':  [ProstokatSymetryczny, parametry + ['wspolczynnik_wypelnienia ']],
         '8':  [Trojkat, parametry + ['wspolczynnik_wypelnienia ']],
         '9':  [SkokJednostkowy, parametry + ['czas_skoku ']],
-        '10': None,
-        '11': None
+        '10': [ImpulsJednostkowy, dyskretne_parametry + ['numer próbki skoku ']],
+        '11': [SzumImpulsowy, dyskretne_parametry + ['prawdopodobieństwo skoku ']],
     }
     if opcje[wybrany_sygnal] is None:
         raise NotImplementedError
@@ -67,19 +69,16 @@ def wykonaj_dzialanie_na_sygnale(sygnal):
         return uklad_xy_b+uklad_xy_a
 
     def _odejmij(uklad_xy_a):
-        uklad_xy_b = wygeneruj_sygnal().generuj_uklad_xy()
-        uklad_xy_wynikowy = uklad_xy_a[1] - uklad_xy_b[1]
-        return uklad_xy_wynikowy
+        uklad_xy_b = wygeneruj_sygnal()
+        return uklad_xy_a-uklad_xy_b
 
     def _pomnoz(uklad_xy_a):
-        uklad_xy_b = wygeneruj_sygnal().generuj_uklad_xy()
-        uklad_xy_wynikowy = uklad_xy_a[1] * uklad_xy_b[1]
-        return uklad_xy_wynikowy
+        uklad_xy_b = wygeneruj_sygnal()
+        return uklad_xy_a*uklad_xy_b
 
     def _podziel(uklad_xy_a):
-        uklad_xy_b = wygeneruj_sygnal().generuj_uklad_xy()
-        uklad_xy_wynikowy = uklad_xy_a[1] / uklad_xy_b[1]
-        return uklad_xy_wynikowy
+        uklad_xy_b = wygeneruj_sygnal()
+        return uklad_xy_a/uklad_xy_b
 
     sygnal_wynikowy = None
 
@@ -104,11 +103,11 @@ def wykonaj_operacje_programu(sygnal):
         return True
 
     def local_wyswietl_wykres():
-        generuj_wykres(sygnal)
+        if isinstance(sygnal,SygnalDyskretny):
+            generuj_histogram(sygnal)
+        else:
+            generuj_wykres(sygnal)
         return True
-
-    def local_zakoncz():
-        return False
 
     def local_kontynuuj():
         return False
@@ -117,13 +116,11 @@ def wykonaj_operacje_programu(sygnal):
     print("(W1) Zapisanie wygenerowanego sygnalu do pliku;")
     print("(W2) Wyświetl wykres;")
     print("(W3) KONTYNUUJ;")
-    print("(W4) ZAKOŃCZ;")
 
     opcje = {
         '1': None,
         '2': local_wyswietl_wykres,
         '3': local_kontynuuj,
-        '4': local_zakoncz
     }
     wybrany_wariant = input("Wykonaj wariant W")
     if opcje[wybrany_wariant] is None:
@@ -134,11 +131,8 @@ def wykonaj_operacje_programu(sygnal):
 def main():
     sygnal = wygeneruj_sygnal()
     while True:
-        if wykonaj_operacje_programu(sygnal) is False:
-            break
+        wykonaj_operacje_programu(sygnal)
         sygnal = wykonaj_dzialanie_na_sygnale(sygnal)
-
-
 
 
 if __name__ == "__main__":
