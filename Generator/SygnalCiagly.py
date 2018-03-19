@@ -96,16 +96,16 @@ class SygnalCiagly(object):
         return self.x, self.y
 
     def srednia(self):
-        return np.sum(self.x/self.f_p)/len(self.x)
+        return np.sum(self.y*self.f_p)/self.y.size
 
     def srednia_bezwzgledna(self):
-        return np.sum(np.abs(self.x/self.f_p)) / len(self.x)
+        return np.sum(np.abs(self.y*self.f_p)) / self.y.size
 
     def moc_srednia(self):
-        return np.sum((self.x**2)/self.f_p) / len(self.x)
+        return np.sum((self.y**2)*self.f_p) / self.y.size
 
     def wariancja_wokol_sredniej(self):
-        return np.sum(((self.x-self.srednia())**2)/self.f_p) / len(self.x)
+        return np.sum(((self.y-self.srednia())**2)*self.f_p) / self.y.size
 
     def wartosc_skuteczna(self):
         return np.sqrt(self.moc_srednia())

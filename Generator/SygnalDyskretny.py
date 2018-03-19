@@ -91,16 +91,16 @@ class SygnalDyskretny(object):
         return self.x, self.y
 
     def srednia(self):
-        return np.sum(self.x)/len(self.x)
+        return np.sum(self.y)/len(self.y)
 
     def srednia_bezwzgledna(self):
-        return np.sum(np.abs(self.x)) / len(self.x)
+        return np.sum(np.abs(self.y)) / len(self.y)
 
     def moc_srednia(self):
-        return np.sum(self.x**2) / len(self.x)
+        return np.sum(self.y**2) / len(self.y)
 
     def wariancja_wokol_sredniej(self):
-        return np.sum((self.x-self.srednia)**2) / len(self.x)
+        return np.sum((self.y-self.srednia())**2) / len(self.y)
 
     def wartosc_skuteczna(self):
         return np.sqrt(self.moc_srednia())
