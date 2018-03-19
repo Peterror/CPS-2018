@@ -105,7 +105,7 @@ class SygnalCiagly(object):
         return np.sum((self.x**2)/self.f_p) / len(self.x)
 
     def wariancja_wokol_sredniej(self):
-        return np.sum(((self.x-self.srednia)**2)/self.f_p) / len(self.x)
+        return np.sum(((self.x-self.srednia())**2)/self.f_p) / len(self.x)
 
     def wartosc_skuteczna(self):
         return np.sqrt(self.moc_srednia())
@@ -160,7 +160,7 @@ class SzumGaussowski(SygnalCiagly):
     def _generuj_probki(self):
         poczatkowe_zera = np.empty(int(self.t1/self.f_p))
         poczatkowe_zera.fill(0)
-        return np.append(poczatkowe_zera, np.random.randn(self._ilosc_probek_wlasciwych))
+        return np.append(poczatkowe_zera, np.random.randn(self._ilosc_probek_wlasciwych) * self.A)
 
 
 class Sinusoida(SygnalCiagly):

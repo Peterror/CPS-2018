@@ -63,7 +63,11 @@ def wygeneruj_sygnal():
             except ValueError:
                 argumenty += [wartosc]
     obiekt_sygnalu = opcje[wybrany_sygnal][0](*argumenty)
-
+    print("Średnia %f" % obiekt_sygnalu.srednia())
+    print("Moc średnia %f" % obiekt_sygnalu.moc_srednia())
+    print("Średnia bezwzględna %f" % obiekt_sygnalu.srednia_bezwzgledna())
+    print("Wariancja wokół średniej %f" % obiekt_sygnalu.wariancja_wokol_sredniej())
+    print("Wartość skuteczna %f" % obiekt_sygnalu.wartosc_skuteczna())
     return obiekt_sygnalu
 
 
