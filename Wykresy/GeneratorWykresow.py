@@ -7,6 +7,12 @@ def generuj_wykres(sygnal):
     plt.show()
 
 
+def generuj_wykresy_nalozone(sygnal_array):
+    for sygnal in sygnal_array:
+        plt.plot(*sygnal.generuj_uklad_xy())
+    plt.show()
+
+
 def generuj_histogram(sygnal):
     plt.plot(*sygnal.generuj_uklad_xy(), '.')
     plt.show()

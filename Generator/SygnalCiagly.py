@@ -18,6 +18,8 @@ class SygnalCiagly(object):
         self.T = okres
         self.y = None  # inicjalizowane w klasach potomnych
         self.x = np.arange(0, czas_trwania + f_probkowania, f_probkowania)
+        self.T_kwantyzacji = None
+        self.n_kwantyzacji = None
 
     def __add__(self, other):
         if self.y.size == other.y.size:
@@ -110,15 +112,68 @@ class SygnalCiagly(object):
     def wartosc_skuteczna(self):
         return np.sqrt(self.moc_srednia())
 
+    def kwantyzacja_z_obcieciem(self, T_kwantyzacji, n_kwantyzacji):
+        self.T_kwantyzacji = T_kwantyzacji
+        self.n_kwantyzacji = n_kwantyzacji
+        podzialka = self.A / n_kwantyzacji * 2
+
+        def _kwantyzuj(v):
+            return podzialka * int((v+self.A)/podzialka) - self.A
+
+        temp_y = np.empty(self.y.size)
+        temp_y.fill(0)
+        aktualna_wartosc = None
+        x_step = int(self.T_kwantyzacji/self.f_p)
+        for i in range(self.y.size):
+            y = self.y[i]
+            if i % x_step == 0:
+                aktualna_wartosc = _kwantyzuj(y)
+            temp_y[i] = aktualna_wartosc
+        return temp_y
+
+    def kwantyzacja_z_zaokragleniem(self, T_kwantyzacji, n_kwantyzacji):
+        self.T_kwantyzacji = T_kwantyzacji
+        self.n_kwantyzacji = n_kwantyzacji
+        podzialka = self.A / n_kwantyzacji * 2
+
+        def _kwantyzuj(v):
+            return podzialka * int((v+self.A)/podzialka) - self.A
+
+        temp_y = np.empty(self.y.size)
+        temp_y.fill(0)
+        przesuniecie = int(T_kwantyzacji/self.f_p/2)
+        aktualna_wartosc = None
+        x_step = int(self.T_kwantyzacji/self.f_p)
+        for i in range(self.y.size):
+            try:
+                y = self.y[i+przesuniecie]
+            except:
+                pass
+            if i % x_step == 0:
+                aktualna_wartosc = _kwantyzuj(y)
+            temp_y[i] = aktualna_wartosc
+        return temp_y
+
+    def ekstrapolacja_1rzedu(self):
+        x_step = int(self.T_kwantyzacji/self.f_p)
+        x = self.x[::x_step]
+        y = self.y[::x_step]
+        return SygnalCiaglyNieokreslony(x, y)
+
+    def sinc(self):
+        raise NotImplementedError
+
 
 # Klasy dziedziczace
 
 class SygnalCiaglyNieokreslony(SygnalCiagly):
-    def __init__(self, x, y):
+    def __init__(self, x, y, T_kwantyzacji=None, n_kwantyzacji=None):
         super(SygnalCiaglyNieokreslony, self).\
             __init__(None, 0, x[-1], None, x[1] - x[0])
         self.x = copy.copy(x)
         self.y = copy.copy(y)
+        self.T_kwantyzacji = T_kwantyzacji
+        self.n_kwantyzacji = n_kwantyzacji
 
     def _generuj_probki(self):
         return None
