@@ -1,4 +1,5 @@
-from Generator import SygnalDyskretny, SygnalCiagly
+from Generator import SygnalCiagly
+from Generator.SygnalDyskretny import SygnalDyskretny
 import matplotlib.pyplot as plt
 
 
@@ -9,7 +10,11 @@ def generuj_wykres(sygnal):
 
 def generuj_wykresy_nalozone(sygnal_array):
     for sygnal in sygnal_array:
-        plt.plot(*sygnal.generuj_uklad_xy())
+        if isinstance(sygnal, SygnalDyskretny):
+            plt.plot(*sygnal.generuj_uklad_xy(), '.')
+        else:
+            plt.plot(*sygnal.generuj_uklad_xy())
+        # plt.plot(*sygnal.generuj_uklad_xy())
     plt.show()
 
 

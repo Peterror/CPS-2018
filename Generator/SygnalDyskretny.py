@@ -108,6 +108,12 @@ class SygnalDyskretny(object):
 
 # Klasy dziedziczace
 
+class SygnalDyskretnyNieokreslony(SygnalDyskretny):
+    def __init__(self, x, y):
+        super(SygnalDyskretnyNieokreslony, self).__init__(np.max(y), 0, np.max(x), 1)
+        self.x = x
+        self.y = y
+
 class ImpulsJednostkowy(SygnalDyskretny):
     def __init__(self, amplituda, numer_pierwszej_probki, czas_trwania, f_probkowania, numer_probki_skoku):
         super(ImpulsJednostkowy, self).__init__(amplituda, numer_pierwszej_probki, czas_trwania,  f_probkowania)

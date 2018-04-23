@@ -1,6 +1,6 @@
 import numpy as np
 import copy
-
+from Generator.SygnalDyskretny import SygnalDyskretny
 
 # Klasy bazowe
 
@@ -20,6 +20,10 @@ class SygnalCiagly(object):
         self.x = np.arange(0, czas_trwania + f_probkowania, f_probkowania)
         self.T_kwantyzacji = None
         self.n_kwantyzacji = None
+        self.kwantyzacja_y = None
+        self.kwantyzacja_x = None
+        self.ekstrapolacja0_y = None
+        self.ekstrapolacja1_y = None
 
     def __add__(self, other):
         if self.y.size == other.y.size:
@@ -120,16 +124,14 @@ class SygnalCiagly(object):
         def _kwantyzuj(v):
             return podzialka * int((v+self.A)/podzialka) - self.A
 
-        temp_y = np.empty(self.y.size)
-        temp_y.fill(0)
-        aktualna_wartosc = None
         x_step = int(self.T_kwantyzacji/self.f_p)
-        for i in range(self.y.size):
-            y = self.y[i]
-            if i % x_step == 0:
-                aktualna_wartosc = _kwantyzuj(y)
-            temp_y[i] = aktualna_wartosc
-        return temp_y
+        hor_podzialka = int(self.y.size/x_step)
+        y = np.arange(0, hor_podzialka, 1)
+        for j in range(hor_podzialka):
+                y[j] = _kwantyzuj(np.min(self.y[j * x_step: j * x_step + x_step]))
+        self.kwantyzacja_y = y
+        self.kwantyzacja_x = np.arange(0, hor_podzialka, 1) * self.T_kwantyzacji
+        return self
 
     def kwantyzacja_z_zaokragleniem(self, T_kwantyzacji, n_kwantyzacji):
         self.T_kwantyzacji = T_kwantyzacji
@@ -139,26 +141,41 @@ class SygnalCiagly(object):
         def _kwantyzuj(v):
             return podzialka * int((v+self.A)/podzialka) - self.A
 
+        x_step = int(self.T_kwantyzacji/self.f_p)
+        hor_podzialka = int(self.y.size/x_step)
+        y = np.arange(0, hor_podzialka, 1)
+        for j in range(hor_podzialka):
+                y[j] = _kwantyzuj(np.average(self.y[j * x_step: j * x_step + x_step]))
+        self.kwantyzacja_y = y
+        self.kwantyzacja_x = np.arange(0, hor_podzialka, 1) * self.T_kwantyzacji
+        return self
+
+    def ekstrapolacja_0rzedu(self):
+        podzialka = self.A / self.n_kwantyzacji * 2
+        x_step = int(self.T_kwantyzacji/self.f_p)
+
         temp_y = np.empty(self.y.size)
         temp_y.fill(0)
-        przesuniecie = int(T_kwantyzacji/self.f_p/2)
-        aktualna_wartosc = None
-        x_step = int(self.T_kwantyzacji/self.f_p)
-        for i in range(self.y.size):
-            try:
-                y = self.y[i+przesuniecie]
-            except:
-                pass
-            if i % x_step == 0:
-                aktualna_wartosc = _kwantyzuj(y)
-            temp_y[i] = aktualna_wartosc
+        for i in range(self.kwantyzacja_x.size):
+            for j in range(x_step):
+                temp_y[i*x_step + j] = self.kwantyzacja_y[i]
+
+        self.ekstrapolacja0_y = temp_y
         return temp_y
 
     def ekstrapolacja_1rzedu(self):
+        podzialka = self.A / self.n_kwantyzacji * 2
         x_step = int(self.T_kwantyzacji/self.f_p)
-        x = self.x[::x_step]
-        y = self.y[::x_step]
-        return SygnalCiaglyNieokreslony(x, y)
+
+        temp_y = np.empty(self.y.size)
+        temp_y.fill(0)
+        for i in range(self.kwantyzacja_x.size-1):
+            y_step = (self.kwantyzacja_y[i+1] - self.kwantyzacja_y[i]) / x_step
+            for j in range(x_step):
+                temp_y[i * x_step + j] = y_step*j + self.kwantyzacja_y[i]
+
+        self.ekstrapolacja1_y = temp_y
+        return temp_y
 
     def sinc(self):
         raise NotImplementedError

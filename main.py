@@ -1,7 +1,7 @@
 from Generator.SygnalCiagly import Trojkat, SzumORozkladzieJednostajnym, SzumGaussowski, SkokJednostkowy, \
     SinusoidaWyprostowanaJednopolowkowo, SinusoidaWyprostowanaDwupolowkowo, ProstokatSymetryczny, Sinusoida, Prostokat,\
     SygnalCiaglyNieokreslony, SygnalCiagly
-from Generator.SygnalDyskretny import SygnalDyskretny, SzumImpulsowy, ImpulsJednostkowy
+from Generator.SygnalDyskretny import SygnalDyskretnyNieokreslony, SygnalDyskretny, SzumImpulsowy, ImpulsJednostkowy
 from Wykresy.GeneratorWykresow import generuj_wykres, generuj_histogram, generuj_wykresy_nalozone
 from OperacjeNaPliku import Wczytaj, Zapisz
 import numpy as np
@@ -158,34 +158,42 @@ def dzialania_kwantyzacji(sygnal):
     def _kwantyzacja_z_obcieciem(uklad_xy_a: SygnalCiagly):
         T_kw = float(input("T_kwantyzacji: "))
         n_kw = 2**int(input("2^n_kwantyzacji: "))
-        sygnal_po_kwantyzacji = SygnalCiaglyNieokreslony(
-            uklad_xy_a.x,
-            uklad_xy_a.kwantyzacja_z_obcieciem(
-                T_kwantyzacji=T_kw,
-                n_kwantyzacji=n_kw),
-            T_kw,
-            n_kw
+        uklad_xy_a.kwantyzacja_z_obcieciem(T_kwantyzacji=T_kw, n_kwantyzacji=n_kw)
+
+        sygnal_po_kwantyzacji = SygnalDyskretnyNieokreslony(
+            uklad_xy_a.kwantyzacja_x,
+            uklad_xy_a.kwantyzacja_y,
         )
         return sygnal_po_kwantyzacji
 
     def _kwantyzacja_z_zaokragleniem(uklad_xy_a: SygnalCiagly):
         T_kw = float(input("T_kwantyzacji: "))
         n_kw = 2**int(input("2^n_kwantyzacji: "))
-        sygnal_po_kwantyzacji = SygnalCiaglyNieokreslony(
-            uklad_xy_a.x,
-            uklad_xy_a.kwantyzacja_z_zaokragleniem(
-                T_kwantyzacji=T_kw,
-                n_kwantyzacji=n_kw),
-            T_kw,
-            n_kw
-            )
+        uklad_xy_a.kwantyzacja_z_zaokragleniem(T_kwantyzacji=T_kw, n_kwantyzacji=n_kw)
+
+        sygnal_po_kwantyzacji = SygnalDyskretnyNieokreslony(
+            uklad_xy_a.kwantyzacja_x,
+            uklad_xy_a.kwantyzacja_y,
+        )
         return sygnal_po_kwantyzacji
 
     def _ekstrapolacja_0rzedu(uklad_xy_a):
-        return uklad_xy_a
+        uklad_xy_a.ekstrapolacja_0rzedu()
+
+        sygnal = SygnalCiaglyNieokreslony(
+            uklad_xy_a.x,
+            uklad_xy_a.ekstrapolacja0_y,
+        )
+        return sygnal
 
     def _ekstrapolacja_1rzedu(uklad_xy_a):
-        return uklad_xy_a.ekstrapolacja_1rzedu()
+        uklad_xy_a.ekstrapolacja_1rzedu()
+
+        sygnal = SygnalCiaglyNieokreslony(
+            uklad_xy_a.x,
+            uklad_xy_a.ekstrapolacja1_y,
+        )
+        return sygnal
 
     def _sinc(uklad_xy_a):
         return uklad_xy_a.sinc()
@@ -213,7 +221,7 @@ def dzialania_kwantyzacji(sygnal):
         if opcje[wybrane_dzialanie] is _nie_rob_nic:
             break
 
-        sygnaly += [opcje[wybrane_dzialanie](sygnaly[-1])]
+        sygnaly += [opcje[wybrane_dzialanie](sygnaly[0])]
         generuj_wykresy_nalozone([sygnaly[0], sygnaly[-1]])
         try:
             MSE = np.sum((sygnaly[0].y - sygnaly[-1].y)**2)/sygnaly[0].y.size
