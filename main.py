@@ -1,7 +1,8 @@
 from Generator.SygnalCiagly import Trojkat, SzumORozkladzieJednostajnym, SzumGaussowski, SkokJednostkowy, \
     SinusoidaWyprostowanaJednopolowkowo, SinusoidaWyprostowanaDwupolowkowo, ProstokatSymetryczny, Sinusoida, Prostokat,\
     SygnalCiaglyNieokreslony, SygnalCiagly
-from Generator.SygnalDyskretny import SygnalDyskretnyNieokreslony, SygnalDyskretny, SzumImpulsowy, ImpulsJednostkowy
+from Generator.SygnalDyskretny import SygnalDyskretnyNieokreslony, SygnalDyskretny, SzumImpulsowy, ImpulsJednostkowy,\
+    OknoHamminga, OknoBlackmana, OknoHanninga
 from Wykresy.GeneratorWykresow import generuj_wykres, generuj_histogram, generuj_wykresy_nalozone
 from OperacjeNaPliku import Wczytaj, Zapisz
 import numpy as np
@@ -20,6 +21,9 @@ def wypisz_dostepne_sygnaly():
     print("(S9) skok jednostkowy;")
     print("(S10) impuls jednostkowy;")
     print("(S11) szum impulsowy;")
+    print("(S12) Okno Hamminga;")
+    print("(S13) Okno Hanninga;")
+    print("(S14) Okno Blackmana;")
 
 
 def wypisz_dostepne_dzialania():
@@ -39,12 +43,19 @@ def wypisz_dostepne_dzialania_kwantyzacji():
     print("(D5) ekstrapolacja sinc;")
 
 
+def wypisz_dostepne_dzialania_splotu():
+    print("(S0) POMIN TEN KROK;")
+    print("(S1) splot dyskretny;")
+    print("(S2) korelacja sygnałów;")
+
+
 def wygeneruj_sygnal():
     print("Który sygnał chcesz generować?")
     wypisz_dostepne_sygnaly()
     wybrany_sygnal = input("Generuj sygnał o kodzie S")
-    parametry = ['amplituda ', 'czas_poczatkowy ', 'czas_trwania ', 'okres ', 'f_probkowania ']
-    dyskretne_parametry = ['amplituda ', 'numer_pierwszej_probki ', 'czas_trwania ', 'f_probkowania ']
+    parametry = ['amplituda ', 'czas_poczatkowy ', 'czas_trwania ', 'okres ', 'okres_probkowania ']
+    dyskretne_parametry = ['amplituda ', 'numer_pierwszej_probki ', 'czas_trwania ', 'okres_probkowania ']
+    parametry_okna = ['wartość M ']
     opcje = {
         '0':  [Wczytaj.wczytaj, ['Nazwa pliku ']],
         '1':  [SzumORozkladzieJednostajnym, parametry],
@@ -58,13 +69,20 @@ def wygeneruj_sygnal():
         '9':  [SkokJednostkowy, parametry + ['czas_skoku ']],
         '10': [ImpulsJednostkowy, dyskretne_parametry + ['numer próbki skoku ']],
         '11': [SzumImpulsowy, dyskretne_parametry + ['prawdopodobieństwo skoku ']],
+        '12': [OknoHamminga, parametry_okna],
+        '13': [OknoHanninga, parametry_okna],
+        '14': [OknoBlackmana, parametry_okna],
         't':  0,  # testowa sinusoida
+        't1':  1,  # testowa sinusoida
     }
     if opcje[wybrany_sygnal] is None:
         raise NotImplementedError
 
     if opcje[wybrany_sygnal] == 0:  # dla testow
-        return Sinusoida(5, 0, 5, 1, 0.01)
+        return Sinusoida(1, 0, 1, 0.5, 0.2)
+
+    if opcje[wybrany_sygnal] == 1:  # dla testow
+        return Sinusoida(1, 0, 1.5, 1, 0.2)
 
     argumenty = []
     print("Podaj parametry sygnału:")
@@ -238,11 +256,44 @@ def dzialania_kwantyzacji(sygnal):
     return sygnaly[-1]
 
 
+def dzialania_splotu(sygnal):
+    def _nie_rob_nic(uklad_xy_a):
+        return uklad_xy_a
+
+    def _splot(sygnal):
+        sygnal_b = wygeneruj_sygnal()
+        return sygnal.splot(sygnal_b)
+
+    def _korelacja(sygnal):
+        pass
+
+    sygnaly = [sygnal]
+    while True:
+        print("Jakie działania wykonać na tym sygnale?")
+        wypisz_dostepne_dzialania_splotu()
+        wybrane_dzialanie = input("Wykonaj działanie S")
+
+        opcje = {
+            '0': _nie_rob_nic,
+            '1': _splot,
+            '2': _korelacja,
+        }
+
+        if opcje[wybrane_dzialanie] is None:
+            raise NotImplementedError
+        if opcje[wybrane_dzialanie] is _nie_rob_nic:
+            break
+
+        sygnaly = [opcje[wybrane_dzialanie](sygnaly[0])]
+        generuj_wykresy_nalozone(sygnaly)
+
+
 def main():
     sygnal = wygeneruj_sygnal()
     while True:
         wykonaj_operacje_programu(sygnal)
-        sygnal = dzialania_kwantyzacji(sygnal)
+        #  sygnal = dzialania_kwantyzacji(sygnal)
+        sygnal = dzialania_splotu(sygnal)
         sygnal = wykonaj_dzialanie_na_sygnale(sygnal)
 
 

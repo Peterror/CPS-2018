@@ -1,6 +1,7 @@
 import numpy as np
 import copy
-from Generator.SygnalDyskretny import SygnalDyskretny
+from Generator.SygnalDyskretny import SygnalDyskretny, SygnalDyskretnyNieokreslony
+
 
 # Klasy bazowe
 
@@ -17,7 +18,7 @@ class SygnalCiagly(object):
         self._ilosc_probek_wlasciwych = int(self._czas_trwania_czystego_sygnalu / self.f_p) + 1
         self.T = okres
         self.y = None  # inicjalizowane w klasach potomnych
-        self.x = np.arange(0, czas_trwania + f_probkowania, f_probkowania)
+        self.x = np.arange(self._ilosc_probek_wlasciwych) * f_probkowania
         self.T_kwantyzacji = None
         self.n_kwantyzacji = None
         self.kwantyzacja_y = None
@@ -180,6 +181,40 @@ class SygnalCiagly(object):
     def sinc(self):
         raise NotImplementedError
 
+    def splot(self, sygnal_b, M=None):
+        ilosc_probek = self.y.size + sygnal_b.y.size - 1
+
+        y = [0 for i in range(ilosc_probek)]
+        x = np.arange(0, ilosc_probek)
+        if M is None:
+            for n in range(ilosc_probek):
+                for k in range(0, self.y.size):
+                    if (n-k) < 0:
+                        break
+                    try:
+                        # h(k) * x(n-k)
+                        temp = self.y[k] * sygnal_b.y[n-k]
+                        y[n] += temp
+                        pass
+                    except IndexError:
+                        pass
+        else:
+            for n in range(ilosc_probek):
+                for k in range(0, M):
+                    if (n-k) < 0:
+                        break
+                    try:
+                        # h(k) * x(n-k)
+                        temp = self.y[k] * sygnal_b.y[n-k]
+                        y[n] += temp
+                        pass
+                    except IndexError:
+                        pass
+        y = np.array(y)
+        return SygnalDyskretnyNieokreslony(x=x, y=y)
+
+    def korelacja(self):
+        raise NotImplementedError
 
 # Klasy dziedziczace
 
