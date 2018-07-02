@@ -139,6 +139,38 @@ class SygnalDyskretny(object):
         y = np.array(y)
         return SygnalDyskretnyNieokreslony(x=x, y=y)
 
+    def korelacja(self, sygnal_b, M=None):
+        ilosc_probek = self.y.size + sygnal_b.y.size - 1
+
+        y = [0 for i in range(ilosc_probek)]
+        x = np.arange(0, ilosc_probek)
+        if M is None:
+            for n in range(ilosc_probek):
+                for k in range(0, self.y.size):
+                    if (n-k) < 0:
+                        break
+                    try:
+                        # h(k) * x(n-k)
+                        temp = self.y[k] * sygnal_b.y[-1-(n-k)]  # dostęp do elementów od końca
+                        y[n] += temp
+                        pass
+                    except IndexError:
+                        pass
+        else:
+            for n in range(ilosc_probek):
+                for k in range(0, M):
+                    if (n-k) < 0:
+                        break
+                    try:
+                        # h(k) * x(n-k)
+                        temp = self.y[k] * sygnal_b.y[-1-(n-k)]
+                        y[n] += temp
+                        pass
+                    except IndexError:
+                        pass
+        y = np.array(y)
+        return SygnalDyskretnyNieokreslony(x=x, y=y)
+
 
 # Klasy dziedziczace
 

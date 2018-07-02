@@ -268,7 +268,8 @@ def dzialania_splotu(sygnal):
         return sygnal.splot(sygnal_b)
 
     def _korelacja(sygnal):
-        pass
+        sygnal_b = wygeneruj_sygnal()
+        return sygnal.korelacja(sygnal_b)
 
     sygnaly = [sygnal]
     while True:
