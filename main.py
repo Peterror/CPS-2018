@@ -2,7 +2,7 @@ from Generator.SygnalCiagly import Trojkat, SzumORozkladzieJednostajnym, SzumGau
     SinusoidaWyprostowanaJednopolowkowo, SinusoidaWyprostowanaDwupolowkowo, ProstokatSymetryczny, Sinusoida, Prostokat,\
     SygnalCiaglyNieokreslony, SygnalCiagly
 from Generator.SygnalDyskretny import SygnalDyskretnyNieokreslony, SygnalDyskretny, SzumImpulsowy, ImpulsJednostkowy,\
-    OknoHamminga, OknoBlackmana, OknoHanninga
+    OknoHamminga, OknoBlackmana, OknoHanninga, OdpowiedzImpulsowaFiltru
 from Wykresy.GeneratorWykresow import generuj_wykres, generuj_histogram, generuj_wykresy_nalozone
 from OperacjeNaPliku import Wczytaj, Zapisz
 import numpy as np
@@ -24,6 +24,7 @@ def wypisz_dostepne_sygnaly():
     print("(S12) Okno Hamminga;")
     print("(S13) Okno Hanninga;")
     print("(S14) Okno Blackmana;")
+    print("(S15) Odpowiedz impulsowa filtru; h(n)")
 
 
 def wypisz_dostepne_dzialania():
@@ -56,6 +57,7 @@ def wygeneruj_sygnal():
     parametry = ['amplituda ', 'czas_poczatkowy ', 'czas_trwania ', 'okres ', 'okres_probkowania ']
     dyskretne_parametry = ['amplituda ', 'numer_pierwszej_probki ', 'czas_trwania ', 'okres_probkowania ']
     parametry_okna = ['wartość M ']
+    parametry_filtru = ['parametr odcięcia (K) ', 'rząd filtru (M) ']
     opcje = {
         '0':  [Wczytaj.wczytaj, ['Nazwa pliku ']],
         '1':  [SzumORozkladzieJednostajnym, parametry],
@@ -72,6 +74,7 @@ def wygeneruj_sygnal():
         '12': [OknoHamminga, parametry_okna],
         '13': [OknoHanninga, parametry_okna],
         '14': [OknoBlackmana, parametry_okna],
+        '15': [OdpowiedzImpulsowaFiltru, parametry_filtru],
         't':  0,  # testowa sinusoida
         't1':  1,  # testowa sinusoida
     }
@@ -286,6 +289,7 @@ def dzialania_splotu(sygnal):
 
         sygnaly = [opcje[wybrane_dzialanie](sygnaly[0])]
         generuj_wykresy_nalozone(sygnaly)
+    return sygnaly[-1]
 
 
 def main():

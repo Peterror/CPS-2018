@@ -3,6 +3,7 @@ import copy
 import random
 import math
 
+
 # Klasy bazowe
 
 class SygnalDyskretny(object):
@@ -137,8 +138,9 @@ class SygnalDyskretny(object):
                         pass
         y = np.array(y)
         return SygnalDyskretnyNieokreslony(x=x, y=y)
-# Klasy dziedziczace
 
+
+# Klasy dziedziczace
 
 class SygnalDyskretnyNieokreslony(SygnalDyskretny):
     def __init__(self, x, y):
@@ -179,7 +181,7 @@ class SzumImpulsowy(SygnalDyskretny):
 
 class OknoHamminga(SygnalDyskretny):
     def __init__(self, M):
-        super(OknoHamminga, self).__init__(amplituda=1.0, numer_pierwszej_probki=0, czas_trwania=M, f_probkowania=1)
+        super(OknoHamminga, self).__init__(amplituda=1.0, numer_pierwszej_probki=0, czas_trwania=M-1, f_probkowania=1)
         self.y = self._generuj_probki()
 
     def _generuj_probki(self):
@@ -192,7 +194,7 @@ class OknoHamminga(SygnalDyskretny):
 
 class OknoHanninga(SygnalDyskretny):
     def __init__(self, M):
-        super(OknoHanninga, self).__init__(amplituda=1.0, numer_pierwszej_probki=0, czas_trwania=M, f_probkowania=1)
+        super(OknoHanninga, self).__init__(amplituda=1.0, numer_pierwszej_probki=0, czas_trwania=M-1, f_probkowania=1)
         self.y = self._generuj_probki()
 
     def _generuj_probki(self):
@@ -205,7 +207,7 @@ class OknoHanninga(SygnalDyskretny):
 
 class OknoBlackmana(SygnalDyskretny):
     def __init__(self, M):
-        super(OknoBlackmana, self).__init__(amplituda=1.0, numer_pierwszej_probki=0, czas_trwania=M, f_probkowania=1)
+        super(OknoBlackmana, self).__init__(amplituda=1.0, numer_pierwszej_probki=0, czas_trwania=M-1, f_probkowania=1)
         self.y = self._generuj_probki()
 
     def _generuj_probki(self):
@@ -214,4 +216,28 @@ class OknoBlackmana(SygnalDyskretny):
         for i in range(poczatkowe_zera.size):
             poczatkowe_zera[i] = 0.42 - 0.5 * math.cos(2 * math.pi * i / self.ilosc_probek) \
                                  + 0.08 * math.cos(4 * math.pi * i / self.ilosc_probek)
+        return poczatkowe_zera
+
+
+class OdpowiedzImpulsowaFiltru(SygnalDyskretny):
+    def __init__(self, K, M, N=None):
+        if N is not None:
+            super(OdpowiedzImpulsowaFiltru, self).__init__(amplituda=1.0, numer_pierwszej_probki=0, czas_trwania=N - 1,
+                                                           f_probkowania=1)
+        else:
+            super(OdpowiedzImpulsowaFiltru, self).__init__(amplituda=1.0, numer_pierwszej_probki=0, czas_trwania=M - 1,
+                                                           f_probkowania=1)
+        self.K = K
+        self.M = M
+        self.y = self._generuj_probki()
+
+    def _generuj_probki(self):
+        poczatkowe_zera = np.empty(int(self.ilosc_probek))
+        poczatkowe_zera.fill(0)
+        for n in range(self.M):
+            if n == (self.M-1)/2:
+                poczatkowe_zera[n] = 2 / self.K
+            else:
+                temp_sin_mianownik = math.pi * (n - (self.M - 1) / 2)
+                poczatkowe_zera[n] = (math.sin((2 * temp_sin_mianownik) / self.K)) / temp_sin_mianownik
         return poczatkowe_zera
