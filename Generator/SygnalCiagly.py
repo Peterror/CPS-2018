@@ -308,7 +308,7 @@ class Sinusoida(SygnalCiagly):
     def _generuj_probki(self):
         poczatkowe_zera = np.empty(int(self.t1/self.f_p))
         poczatkowe_zera.fill(0)
-        t = np.arange(0, self._czas_trwania_czystego_sygnalu + self.f_p, self.f_p)
+        t = np.arange(0, self._ilosc_probek_wlasciwych) * self.f_p
         return np.append(poczatkowe_zera, self.A * np.sin(2*np.pi/self.T * (t-self.t1)))
 
 

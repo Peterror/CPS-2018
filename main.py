@@ -5,6 +5,8 @@ from Generator.SygnalDyskretny import SygnalDyskretnyNieokreslony, SygnalDyskret
     OknoHamminga, OknoBlackmana, OknoHanninga, OdpowiedzImpulsowaFiltru
 from Wykresy.GeneratorWykresow import generuj_wykres, generuj_histogram, generuj_wykresy_nalozone
 from OperacjeNaPliku import Wczytaj, Zapisz
+from Transformata.DFT import DFT
+from Transformata import Wykresy
 import numpy as np
 
 
@@ -50,6 +52,14 @@ def wypisz_dostepne_dzialania_splotu():
     print("(S2) korelacja sygnałów;")
 
 
+def wypisz_dostepne_dzialania_fft():
+    print("(W0) POMIN TEN KROK;")
+    print("(W1) generuj wykresy Re(f), Im(f); DFT")
+    print("(W2) generuj wykrjesy |FFT|, argFFT(f); DFT")
+    print("(W3) generuj wykresy Re(f), Im(f);DIT FFT")
+    print("(W4) generuj wykrjesy |FFT|, argFFT(f);DIT FFT")
+
+
 def wygeneruj_sygnal():
     print("Który sygnał chcesz generować?")
     wypisz_dostepne_sygnaly()
@@ -77,6 +87,7 @@ def wygeneruj_sygnal():
         '15': [OdpowiedzImpulsowaFiltru, parametry_filtru],
         't':  0,  # testowa sinusoida
         't1':  1,  # testowa sinusoida
+        't2':  2,  # FFT sinusoida
     }
     if opcje[wybrany_sygnal] is None:
         raise NotImplementedError
@@ -86,6 +97,9 @@ def wygeneruj_sygnal():
 
     if opcje[wybrany_sygnal] == 1:  # dla testow
         return Sinusoida(1, 0, 1.5, 1, 0.2)
+
+    if opcje[wybrany_sygnal] == 2:  # dla testow
+        return Sinusoida(1, 0, 1.0239, 0.1, 0.001)
 
     argumenty = []
     print("Podaj parametry sygnału:")
@@ -293,11 +307,62 @@ def dzialania_splotu(sygnal):
     return sygnaly[-1]
 
 
+def dzialania_z_transformata_fouriera(sygnal):
+    def _nie_rob_nic(uklad_xy_a):
+        return uklad_xy_a
+
+    def _DFT_ReIm(sygnal):
+        dft = DFT(1 / sygnal.f_p, sygnal.y.size, sygnal.y)
+        Wykresy.generuj_ReIm(dft.generate_frequency())
+        return sygnal  # .FFT()
+
+    def _DFT_ampF(sygnal):
+        dft = DFT(1 / sygnal.f_p, sygnal.y.size, sygnal.y)
+        Wykresy.generuj_odleglosc(dft.generate_frequency())
+
+        return sygnal  # .FFT()
+
+    def _FFT_ReIm(sygnal):
+        pass
+        return sygnal  # .FFT()
+
+    def _FFT_ampF(sygnal):
+        pass
+        return sygnal  # .FFT()
+
+    sygnaly = [sygnal]
+    while True:
+        print("Jakie działania Fourier Transform wykonać na tym sygnale?")
+        wypisz_dostepne_dzialania_fft()
+        wybrane_dzialanie = input("Wykonaj działanie W")
+        print("(W1) generuj wykresy Re(f), Im(f); DFT")
+        print("(W2) generuj wykrjesy |FFT|, argFFT(f); DFT")
+        print("(W3) generuj wykresy Re(f), Im(f);DIT FFT")
+        print("(W4) generuj wykrjesy |FFT|, argFFT(f);DIT FFT")
+        opcje = {
+            '0': _nie_rob_nic,
+            '1': _DFT_ReIm,
+            '2': _DFT_ampF,
+            '3': _FFT_ReIm,
+            '4': _FFT_ampF,
+        }
+
+        if opcje[wybrane_dzialanie] is None:
+            raise NotImplementedError
+        if opcje[wybrane_dzialanie] is _nie_rob_nic:
+            break
+
+        sygnaly = [opcje[wybrane_dzialanie](sygnaly[0])]
+        generuj_wykresy_nalozone(sygnaly)
+    return sygnaly[-1]
+
+
 def main():
     sygnal = wygeneruj_sygnal()
     while True:
         wykonaj_operacje_programu(sygnal)
         #  sygnal = dzialania_kwantyzacji(sygnal)
+        sygnal = dzialania_z_transformata_fouriera(sygnal)
         sygnal = dzialania_splotu(sygnal)
         sygnal = wykonaj_dzialanie_na_sygnale(sygnal)
 
