@@ -423,3 +423,36 @@ class SkokJednostkowy(SygnalCiagly):
         koncowe_zera = np.empty(int((self.d-self.t_s+self.f_p)/self.f_p))
         koncowe_zera.fill(self.A)
         return np.append(poczatkowe_zera, koncowe_zera)
+
+
+class S1(SygnalCiagly):
+    def __init__(self):
+        super(S1, self).\
+            __init__(7, 0, 1/16 * 16 - 0.00001, 0.5, 1/16)
+        self.y = self._generuj_probki()
+
+    def _generuj_probki(self):
+        t = np.arange(16) * (1/16)
+        return 2 * np.sin(np.pi * t + np.pi / 2) + 5 * np.sin(4 * np.pi * t + np.pi/2)
+
+
+class S2(SygnalCiagly):
+    def __init__(self):
+        super(S2, self).\
+            __init__(7, 0, 1/16 * 16 - 0.00001, 0.5, 1/16)
+        self.y = self._generuj_probki()
+
+    def _generuj_probki(self):
+        t = np.arange(16) * (1/16)
+        return 2 * np.sin(np.pi * t) + np.sin(2 * np.pi * t) + 5 * np.sin(4 * np.pi * t)
+
+
+class S3(SygnalCiagly):
+    def __init__(self):
+        super(S3, self).\
+            __init__(7, 0, 1/16 * 16 - 0.00001, 0.5, 1/16)
+        self.y = self._generuj_probki()
+
+    def _generuj_probki(self):
+        t = np.arange(16) * (1/16)
+        return 5 * np.sin(np.pi * t) + np.sin(4 * np.pi * t)

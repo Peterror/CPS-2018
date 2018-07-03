@@ -11,10 +11,10 @@ class FFT(object):
             self._number_of_samples = 1 << samples_power_of_two
         except ValueError:
             raise ValueError("samples_power_of_two must be an int greater than 0")
-        if self._number_of_samples != sampling_frequency:
+        if self._number_of_samples != int(sampling_frequency):
             raise ValueError("sampling_frequency must be equal to the number of samples")
         self._samples_power_of_two = samples_power_of_two
-        self._sampling_frequency = sampling_frequency
+        self._sampling_frequency = int(sampling_frequency)
         self._frequency_bin_resolution = self._sampling_frequency / self._number_of_samples
         self.frequency_bin_x_axis = [self._frequency_bin_resolution * n
                                       for n in range(int(self._sampling_frequency/2))]  # Nyquist limit

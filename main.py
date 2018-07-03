@@ -1,6 +1,6 @@
 from Generator.SygnalCiagly import Trojkat, SzumORozkladzieJednostajnym, SzumGaussowski, SkokJednostkowy, \
     SinusoidaWyprostowanaJednopolowkowo, SinusoidaWyprostowanaDwupolowkowo, ProstokatSymetryczny, Sinusoida, Prostokat,\
-    SygnalCiaglyNieokreslony, SygnalCiagly
+    SygnalCiaglyNieokreslony, SygnalCiagly, S1, S2, S3
 from Generator.SygnalDyskretny import SygnalDyskretnyNieokreslony, SygnalDyskretny, SzumImpulsowy, ImpulsJednostkowy,\
     OknoHamminga, OknoBlackmana, OknoHanninga, OdpowiedzImpulsowaFiltru
 from Wykresy.GeneratorWykresow import generuj_wykres, generuj_histogram, generuj_wykresy_nalozone
@@ -28,6 +28,9 @@ def wypisz_dostepne_sygnaly():
     print("(S13) Okno Hanninga;")
     print("(S14) Okno Blackmana;")
     print("(S15) Odpowiedz impulsowa filtru; h(n)")
+    print("(SS1) zad4 sygnal1")
+    print("(SS2) zad4 sygnal2")
+    print("(SS3) zad4 sygnal3")
 
 
 def wypisz_dostepne_dzialania():
@@ -86,6 +89,9 @@ def wygeneruj_sygnal():
         '13': [OknoHanninga, parametry_okna],
         '14': [OknoBlackmana, parametry_okna],
         '15': [OdpowiedzImpulsowaFiltru, parametry_filtru],
+        'S1': [S1, []],
+        'S2': [S2, []],
+        'S3': [S3, []],
         't':  0,  # testowa sinusoida
         't1':  1,  # testowa sinusoida
         't2':  2,  # FFT sinusoida
