@@ -6,7 +6,8 @@ from Generator.SygnalDyskretny import SygnalDyskretnyNieokreslony, SygnalDyskret
 from Wykresy.GeneratorWykresow import generuj_wykres, generuj_histogram, generuj_wykresy_nalozone
 from OperacjeNaPliku import Wczytaj, Zapisz
 from Transformata.DFT import DFT
-from Transformata import Wykresy
+from Transformata.FFT import FFT
+from Transformata.Wykresy import generuj_ReIm, generuj_odleglosc, generuj_odleglosc_FFT, generuj_ReIm_FFT
 import numpy as np
 
 
@@ -99,7 +100,7 @@ def wygeneruj_sygnal():
         return Sinusoida(1, 0, 1.5, 1, 0.2)
 
     if opcje[wybrany_sygnal] == 2:  # dla testow
-        return Sinusoida(1, 0, 1.0239, 0.1, 0.001)
+        return Sinusoida(1, 0, 0.99999, 0.1, 1/1024)
 
     argumenty = []
     print("Podaj parametry sygnału:")
@@ -311,34 +312,41 @@ def dzialania_z_transformata_fouriera(sygnal):
     def _nie_rob_nic(uklad_xy_a):
         return uklad_xy_a
 
+    def _size_to_power_of_two(size):
+        temp_size = size
+        power = 0
+        temp_size >>= 1
+        while temp_size:
+            temp_size >>= 1
+            power += 1
+        return power
+
     def _DFT_ReIm(sygnal):
         dft = DFT(1 / sygnal.f_p, sygnal.y.size, sygnal.y)
-        Wykresy.generuj_ReIm(dft.generate_frequency())
-        return sygnal  # .FFT()
+        generuj_ReIm(dft.generate_frequency())
+        return sygnal
 
     def _DFT_ampF(sygnal):
         dft = DFT(1 / sygnal.f_p, sygnal.y.size, sygnal.y)
-        Wykresy.generuj_odleglosc(dft.generate_frequency())
+        generuj_odleglosc(dft.generate_frequency())
 
-        return sygnal  # .FFT()
+        return sygnal
 
     def _FFT_ReIm(sygnal):
-        pass
-        return sygnal  # .FFT()
+        fft = FFT(1 / sygnal.f_p, _size_to_power_of_two(sygnal.y.size))
+        generuj_ReIm_FFT(fft.generate_frequency_bins(sygnal.y))
+        return sygnal
 
     def _FFT_ampF(sygnal):
-        pass
-        return sygnal  # .FFT()
+        fft = FFT(1 / sygnal.f_p, _size_to_power_of_two(sygnal.y.size))
+        generuj_odleglosc_FFT(fft.generate_frequency_bins(sygnal.y))
+        return sygnal
 
     sygnaly = [sygnal]
     while True:
         print("Jakie działania Fourier Transform wykonać na tym sygnale?")
         wypisz_dostepne_dzialania_fft()
         wybrane_dzialanie = input("Wykonaj działanie W")
-        print("(W1) generuj wykresy Re(f), Im(f); DFT")
-        print("(W2) generuj wykrjesy |FFT|, argFFT(f); DFT")
-        print("(W3) generuj wykresy Re(f), Im(f);DIT FFT")
-        print("(W4) generuj wykrjesy |FFT|, argFFT(f);DIT FFT")
         opcje = {
             '0': _nie_rob_nic,
             '1': _DFT_ReIm,
